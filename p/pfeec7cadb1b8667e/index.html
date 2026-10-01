@@ -349,6 +349,40 @@ input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
 .view-in{animation:viewIn .28s cubic-bezier(.22,.9,.26,1)}
 @keyframes viewIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* ---------- desktop ----------
+   Phone-first by design, but on a wide screen a single 560px column reads as a
+   lost strip. Flow the cards into two balanced columns and float the nav. */
+@media (min-width:900px){
+  body{padding-bottom:112px}
+  .wrap{max-width:1000px}
+
+  .view-in{column-count:2; column-gap:16px}
+  .view-in > *{break-inside:avoid; -webkit-column-break-inside:avoid; page-break-inside:avoid}
+  .view-in > .card.hero, .view-in > .banner{column-span:all}
+
+  /* The hero has room to breathe at full width. */
+  .card.hero{padding:34px 24px 26px}
+  .hero .amount{font-size:62px}
+  .hero .pots{max-width:620px;margin-left:auto;margin-right:auto;gap:14px}
+  .ring{top:24px;right:26px;width:58px;height:58px}
+
+  /* Floating pill nav instead of a full-width bar. */
+  .nav{
+    left:50%; right:auto; transform:translateX(-50%);
+    width:auto; min-width:420px; bottom:20px;
+    border-radius:999px; border:1px solid var(--line);
+    padding:7px 10px; box-shadow:var(--sh-3);
+  }
+  .nav button{padding:5px 10px 4px}
+  .nav .ni{padding:5px 20px}
+
+  .toast{bottom:104px}
+  .sheet{border-radius:26px; bottom:auto; top:50%; transform:translate(0,-40%) scale(.98);
+         max-height:86vh; opacity:0}
+  .sheet.on{transform:translate(0,-50%) scale(1); opacity:1}
+}
+@media (min-width:1200px){ .wrap{max-width:1080px} }
 </style>
 </head>
 <body>
