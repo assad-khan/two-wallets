@@ -67,12 +67,19 @@ input,select,textarea{font-family:inherit;font-size:14px;color:var(--ink)}
 
 /* ---------- panels ---------- */
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);
-  margin-bottom:14px;overflow:hidden}
+  margin-bottom:14px;overflow:hidden;display:flex;flex-direction:column}
 .panel > .ph{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);
   background:var(--panel-2)}
 .panel > .ph h3{font-size:11px;text-transform:uppercase;letter-spacing:.075em;color:var(--ink-2);font-weight:750}
 .panel > .ph .meta{margin-left:auto;font-size:11.5px;color:var(--ink-3);font-weight:600}
-.panel > .pb{padding:14px}
+.panel > .pb{padding:14px;flex:1;min-height:0}
+.panel > .pb.mid{display:flex;flex-direction:column;justify-content:center}
+.panel > .pf{margin-top:auto;border-top:1px solid var(--line);background:var(--panel-2);padding:9px 14px}
+.panel > .pf .kv{padding:2px 0;font-size:12.5px}
+/* A long list must not set the height of a whole dashboard row. */
+.dl.cap{max-height:316px;overflow-y:auto;overscroll-behavior:contain}
+.dl.cap::-webkit-scrollbar{width:7px}
+.dl.cap::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:4px}
 .panel > .pb.flush{padding:0}
 .panel.accent > .ph{background:var(--brand-soft);border-bottom-color:transparent}
 .panel.accent > .ph h3{color:var(--brand)}
@@ -241,17 +248,17 @@ table.dtable td.n{text-align:right;font-family:var(--nums);font-weight:650}
   .topbar{padding:14px 24px;background:var(--bg);border-bottom:1px solid var(--line);backdrop-filter:none}
   .topbar .mark{display:none}
   .topbar .ttl{font-size:19px;font-weight:720;letter-spacing:-.018em}
-  .wrap{padding:20px 24px;max-width:1440px}
+  .wrap{padding:20px 24px;max-width:1880px}
   .kpis{grid-template-columns:repeat(5,1fr);gap:12px}
   .kpi.lead{grid-column:span 1;background:linear-gradient(135deg,var(--brand-soft),var(--panel) 72%)}
   .kpi.lead .v{font-size:26px}
-  .dash{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;align-items:start}
+  .dash{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;align-items:stretch}
   .dash > .panel{margin-bottom:0}
   .col-4{grid-column:span 4} .col-5{grid-column:span 5} .col-6{grid-column:span 6}
   .col-7{grid-column:span 7} .col-8{grid-column:span 8} .col-12{grid-column:span 12}
   .toast{bottom:28px}
 }
-@media (min-width:1500px){ .wrap{max-width:1600px} }
+
 </style>
 </head>
 <body>
@@ -259,7 +266,7 @@ table.dtable td.n{text-align:right;font-family:var(--nums);font-weight:650}
   <aside class="side" id="side"></aside>
   <div class="main">
     <div id="demoBar" class="demo-bar hidden"></div>
-    <div class="topbar">
+    <div class="topbar" id="topbar">
       <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
         <circle cx="50" cy="50" r="34" fill="#c0663c"/><path d="M50 16a34 34 0 0 1 0 68z" fill="#2f7a68"/>
       </svg>
@@ -522,13 +529,16 @@ const SERIES = ["--s1","--s2","--s3","--s4","--s5","--s6"];
 const sVar = i => `var(${SERIES[i % SERIES.length]})`;
 
 /** Magnitude by identity → horizontal bars, direct labels (relief for low-contrast slot). */
+/** The dashboard grid and the chart canvases switch at the same breakpoint. */
+const wideLayout = () => window.innerWidth >= 1000;
+
 function chartCategories(data, id){
   if(!data.length) return `<div class="empty">Nothing logged yet.</div>`;
   const top = data.slice(0,6);
   const other = data.slice(6).reduce((t,d)=>t+d.val,0);
   const rows = other>0 ? [...top,{cat:"Other",val:other}] : top;
   const max = Math.max(...rows.map(r=>r.val))||1;
-  const H=30, GAP=10, LW=130, RW=80, W=760;
+  const H=30, GAP=10, LW=130, RW=80, W=wideLayout()?900:620;
   const h = rows.length*(H+GAP)-GAP;
   const bars = rows.map((r,i)=>{
     const y=i*(H+GAP), w=Math.max(4,(W-LW-RW)*(r.val/max));
@@ -548,7 +558,7 @@ function chartCategories(data, id){
 /** Change over time, one series → area + line, no legend needed. */
 function chartNetWorth(points, id){
   if(points.length<2) return `<div class="empty">Add assets to see your net worth over time.</div>`;
-  const W=760,H=210,P=10,BOT=24,LEFT=4;
+  const W=wideLayout()?1120:580, H=200, P=10, BOT=24, LEFT=4;
   const vals=points.map(p=>p.value);
   const lo=Math.min(...vals), hi=Math.max(...vals);
   const pad=(hi-lo)*0.15||1, min=lo-pad, max=hi+pad;
@@ -574,7 +584,7 @@ function chartNetWorth(points, id){
 
 /** Two series over time → grouped bars, 2px surface gap, legend + table. */
 function chartYear(months, id){
-  const W=1120,H=230,BOT=26,TOP=10,RIGHT=58;
+  const W=wideLayout()?1720:620, H=235, BOT=26, TOP=10, RIGHT=58;
   const max=Math.max(...months.flatMap(m=>[m.inM,m.outM]),1);
   const bw=(W-RIGHT)/months.length, gw=bw*0.34;
   const y=v=>TOP+(H-TOP-BOT)*(1-v/max);
@@ -662,7 +672,9 @@ function worthSeries(){
 
 const panel=(title, body, o={})=>`<div class="panel ${o.cls||""}">
   <div class="ph"><h3>${title}</h3>${o.meta?`<span class="meta">${o.meta}</span>`:""}${o.action||""}</div>
-  <div class="pb${o.flush?" flush":""}">${body}</div></div>`;
+  <div class="pb${o.flush?" flush":""}${o.mid?" mid":""}">${body}</div>
+  ${o.foot?`<div class="pf">${o.foot}</div>`:""}</div>`;
+const kvRow=(k,v,cls)=>`<div class="kv"><span class="k">${k}</span><span class="v ${cls||""}">${v}</span></div>`;
 
 function kpiStrip(){
   const s=safeToSpend(), nw=netWorth(), np=nextPayday();
@@ -702,7 +714,7 @@ function viewToday(){
 
   const cats=spendByCategory();
   const catPanel = panel("Spending by category", chartCategories(cats,"catChart"), {
-    cls:"col-8", meta:`${catRangeLabel()} · ${money0(cats.reduce((x,c)=>x+c.val,0))}`,
+    cls:"col-8", mid:true, meta:`${catRangeLabel()} · ${money0(cats.reduce((x,c)=>x+c.val,0))}`,
     action:`<div class="seg" style="margin-left:10px">
       <button data-cat="30" class="${ui.catRange==30?"on":""}">30d</button>
       <button data-cat="90" class="${ui.catRange==90?"on":""}">90d</button>
@@ -711,26 +723,42 @@ function viewToday(){
   const upcoming=[];
   state.bills.forEach(b=>billDates(b,t,addDays(t,32)).forEach(d=>{ if(!billPaid(b,d)) upcoming.push({b,d}); }));
   upcoming.sort((x,y)=>x.d.localeCompare(y.d));
-  const billsPanel = panel("Upcoming bills", upcoming.length? `<div class="dl">${upcoming.slice(0,7).map(({b,d})=>`
+  const billsPanel = panel("Upcoming bills", upcoming.length? `<div class="dl cap">${upcoming.slice(0,9).map(({b,d})=>`
       <div class="r"><button class="tick" data-act="toggleBill" data-id="${b.id}" data-date="${d}" aria-label="Mark paid">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" style="width:12px;height:12px"><path d="m4 12 6 6L20 6"/></svg></button>
       <div class="m"><div class="t">${esc(b.name)}</div><div class="s">${fmtDate(d)}${b.sinking?` · <span class="tag">set aside</span>`:""}</div></div>
       <div class="a">${money(b.amount)}</div></div>`).join("")}</div>`
     : `<div class="empty">Nothing due in the next month.</div>`,
-    {cls:"col-4", flush:true, meta:`${money0(upcoming.reduce((x,u)=>x+u.b.amount,0))} due`});
+    {cls:"col-4", flush:true, meta:`${upcoming.length} due`,
+     foot: kvRow("Due in the next month", money(upcoming.reduce((x,u)=>x+u.b.amount,0)))
+         + kvRow("Of that, before payday", money(safeToSpend().bills))});
 
-  const worthPanel = panel("Net worth", chartNetWorth(worthSeries(),"worthChart"),
-    {cls:"col-7", meta:"last 12 months"});
+  const nwNow=netWorth(), nwPts=worthSeries();
+  const nwChange = nwPts.length>1 ? nwPts[nwPts.length-1].value - nwPts[0].value : 0;
+  const worthPanel = panel("Net worth", chartNetWorth(nwPts,"worthChart"),
+    {cls:"col-8", meta:"last 12 months", mid:true,
+     foot: kvRow("Everything you own", money(nwNow.assets))
+         + kvRow("Less everything you owe", "−"+money(nwNow.debts), "neg")
+         + kvRow("Net worth", money(nwNow.net)+"  ("+(nwChange>=0?"+":"−")+money0(Math.abs(nwChange))+" over 12 months)")});
 
   const goalsPanel = panel("Savings goals", state.goals.length? `<div class="dl">${state.goals.map(g=>{
       const pc=g.target>0?clamp(g.saved/g.target*100,0,100):0;
       return `<div class="r" style="display:block"><div style="display:flex;align-items:baseline;gap:10px">
         <div class="t" style="flex:1">${esc(g.name)}</div><div class="a">${money0(g.saved)} <span class="muted" style="font-weight:500">/ ${money0(g.target)}</span></div></div>
         <div class="bar"><i style="width:${pc}%"></i></div></div>`; }).join("")}</div>`
-    : `<div class="empty">No goals yet.</div>`, {cls:"col-5", flush:true});
+    : `<div class="empty">No goals yet.</div>`,
+    {cls:"col-4", flush:true,
+     foot: kvRow("Saved so far", money(state.goals.reduce((t,g)=>t+(+g.saved||0),0)))
+         + kvRow("Target", money(state.goals.reduce((t,g)=>t+(+g.target||0),0)))
+         + kvRow("Held back each month", money(goalReserve()))});
 
-  const yearPanel = panel("Money in and out", chartYear(yearMonths(),"yearChart"),
-    {cls:"col-12", meta:"last 12 months"});
+  const ym=yearMonths();
+  const inSum=ym.reduce((t,m)=>t+m.inM,0), outSum=ym.reduce((t,m)=>t+m.outM,0);
+  const yearPanel = panel("Money in and out", chartYear(ym,"yearChart"),
+    {cls:"col-12", meta:"last 12 months",
+     foot:`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+       ${kvRow("Money in", money(inSum), "pos")}${kvRow("Money out", money(outSum))}
+       ${kvRow("Kept", money(inSum-outSum), inSum-outSum>=0?"pos":"neg")}</div>`});
 
   const order=[...state.debts].sort((a,b)=> ui.debtOrder==="rate"? b.rate-a.rate : a.balance-b.balance);
   const debtPanel = panel("Debt payoff", order.length? `<div class="dl">${order.map((d,i)=>`
@@ -738,17 +766,24 @@ function viewToday(){
       <div class="s">${d.rate||0}% · min ${money0(d.minimum||0)}</div></div>
       <div class="a neg">${money(d.balance)}</div></div>`).join("")}</div>`
     : `<div class="empty">No debts tracked.</div>`,
-    {cls:"col-4", flush:true, meta:money0(state.debts.reduce((x,d)=>x+d.balance,0))+" owed"});
+    {cls:"col-4", flush:true, meta: ui.debtOrder==="rate"?"avalanche":"snowball",
+     foot: kvRow("Total owed", money(state.debts.reduce((x,d)=>x+d.balance,0)), "neg")
+         + kvRow("Minimums a month", money(state.debts.reduce((x,d)=>x+(+d.minimum||0),0)))
+         + (order.length? kvRow("Clearing first", esc(order[0].name)) : "")});
 
-  const recent=[...state.spends].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).slice(0,6);
+  const recent=[...state.spends].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).slice(0,8);
   const logPanel = panel("Log a spend",
     `<div class="quick"><input id="qInput" placeholder="e.g. 45 groceries" autocomplete="off" enterkeyhint="done">
       <button class="btn primary" data-act="quickAdd">Add</button></div>
-     <div class="dl" style="margin:10px -14px -14px">${recent.map(x=>`
+     <div class="dl cap" style="margin:10px -14px -14px">${recent.map(x=>`
        <div class="r"><div class="m"><div class="t">${esc(x.category||"Spend")}</div><div class="s">${fmtDate(x.date)}</div></div>
        <div class="a">${money(x.amount)}</div></div>`).join("")}</div>`, {cls:"col-4"});
 
-  const runPanel = panel("Run to payday", runToPayday(), {cls:"col-4", flush:true});
+  const low = runLowPoint();
+  const runPanel = panel("Run to payday", runToPayday(), {cls:"col-4", flush:true,
+    meta:`${safeToSpend().days} days`,
+    foot: kvRow("Lowest point", money(low.value), low.value<0?"neg":"")
+        + kvRow("On", low.date? fmtDateLong(low.date) : "—")});
 
   h+=`<div class="dash">${rnPanel?`<div class="col-12">${rnPanel}</div>`:""}
     ${catPanel}${billsPanel}${worthPanel}${goalsPanel}${yearPanel}${debtPanel}${logPanel}${runPanel}</div>`;
@@ -767,6 +802,20 @@ function nextAction(){
   return null;
 }
 
+/** Walks the same day-by-day balance as runToPayday and reports the dip.
+    Shared so the panel footer can never contradict the rows above it. */
+function runLowPoint(){
+  const s=safeToSpend(), t=todayISO(); let bal=spendBal();
+  let low={value:bal, date:t};
+  for(let i=0;i<=s.days;i++){
+    const d=addDays(t,i);
+    state.bills.filter(b=>!b.sinking).forEach(b=>{ if(billDates(b,d,d).length&&!billPaid(b,d)) bal-=b.amount; });
+    state.incomes.forEach(i2=>{ if(incomeDates(i2,d,d).length) bal+=i2.amount*(1-(i2.autoSave||0)/100); });
+    if(bal<low.value) low={value:bal, date:d};
+  }
+  return low;
+}
+
 function runToPayday(){
   const s=safeToSpend(), t=todayISO(); let bal=spendBal(); const rows=[];
   for(let i=0;i<=Math.min(s.days,14);i++){
@@ -778,7 +827,7 @@ function runToPayday(){
       <div class="s">${ev.length?esc(ev.join(" · ")):"nothing due"}</div></div>
       <div class="a" style="color:${bal<0?"var(--bad)":"var(--ink)"}">${money0(bal)}</div></div>`);
   }
-  return `<div class="dl">${rows.join("")||`<div class="empty">Add bills and pay to see the run.</div>`}</div>`;
+  return `<div class="dl cap">${rows.join("")||`<div class="empty">Add bills and pay to see the run.</div>`}</div>`;
 }
 
 function viewBills(){
@@ -1354,11 +1403,12 @@ function bindSheet(){
 
 $("#sheetBg").addEventListener("click",closeSheet);
 $("#sheetClose").addEventListener("click",closeSheet);
-$("#nav").addEventListener("click",e=>{ const b=e.target.closest("[data-tab]"); if(!b) return;
-  ui.tab=b.dataset.tab; scrollTo(0,0); render(); });
+[$("#nav"), $("#side")].forEach(root => root.addEventListener("click",e=>{ const b=e.target.closest("[data-tab]"); if(!b) return;
+  ui.tab=b.dataset.tab; scrollTo(0,0); render(); }));
 $("#themeBtn").addEventListener("click",()=>{ state.settings.theme=state.settings.theme==="midnight"?"soft":"midnight"; save(); render(); });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeSheet(); });
-addEventListener("scroll",()=>$("#topbar").classList.toggle("scrolled", scrollY>4),{passive:true});
+let _wide = wideLayout();
+addEventListener("resize",()=>{ const w=wideLayout(); if(w!==_wide){ _wide=w; render(); } });
 
 /* ---------- boot ---------- */
 state=load();
