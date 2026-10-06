@@ -35,6 +35,8 @@
 
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
   --nums:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+  --s1:#15917a; --s2:#d2622f; --s3:#4b5fd0; --s4:#d79a1a; --s5:#b5478f; --s6:#5c9e2d;
+  --grid:#e3dcd0; --axis:#8d8378;
 }
 :root[data-theme="midnight"]{
   --bg:#11151d; --bg-2:#0c1016;
@@ -51,6 +53,8 @@
   --sh-2:0 1px 3px rgba(0,0,0,.35), 0 6px 18px -6px rgba(0,0,0,.45);
   --sh-3:0 2px 6px rgba(0,0,0,.4), 0 18px 40px -14px rgba(0,0,0,.6);
   --sh-nav:0 -1px 0 rgba(255,255,255,.04), 0 -12px 30px -16px rgba(0,0,0,.7);
+  --s1:#21937b; --s2:#d9703c; --s3:#6b7cd8; --s4:#b08a26; --s5:#c45f9f; --s6:#68a440;
+  --grid:#262e3c; --axis:#6b7586;
 }
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -348,6 +352,132 @@ input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
 }
 .view-in{animation:viewIn .28s cubic-bezier(.22,.9,.26,1)}
 @keyframes viewIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+/* ============================================================
+   Dashboard shell — ported from One Wallet so both products read as
+   one family, and so the desktop view is dense rather than two
+   narrow columns floating in whitespace.
+   ============================================================ */
+/* ---------- panels ---------- */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);
+  margin-bottom:14px;overflow:hidden;display:flex;flex-direction:column}
+.panel > .ph{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);
+  background:var(--panel-2)}
+.panel > .ph h3{font-size:11px;text-transform:uppercase;letter-spacing:.075em;color:var(--ink-2);font-weight:750}
+.panel > .ph .meta{margin-left:auto;font-size:11.5px;color:var(--ink-3);font-weight:600}
+.panel > .pb{padding:14px;flex:1;min-height:0}
+.panel > .pb.mid{display:flex;flex-direction:column;justify-content:center}
+.panel > .pf{margin-top:auto;border-top:1px solid var(--line);background:var(--panel-2);padding:9px 14px}
+.panel > .pf .kv{padding:2px 0;font-size:12.5px}
+/* A long list must not set the height of a whole dashboard row. */
+.dl.cap{max-height:264px;overflow-y:auto;overscroll-behavior:contain}
+.dl.cap::-webkit-scrollbar{width:7px}
+.dl.cap::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:4px}
+.panel > .pb.flush{padding:0}
+.panel.accent > .ph{background:var(--brand-soft);border-bottom-color:transparent}
+.panel.accent > .ph h3{color:var(--brand)}
+
+
+/* ---------- KPI strip ---------- */
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 13px;box-shadow:var(--sh);min-width:0;overflow-wrap:anywhere}
+.kpi .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);font-weight:750;
+  display:flex;align-items:center;gap:6px}
+.kpi .v{font-family:var(--nums);font-size:22px;overflow-wrap:normal;font-weight:720;letter-spacing:-.025em;margin-top:5px;
+  font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .d{font-size:11px;color:var(--ink-3);margin-top:3px}
+.kpi.lead{grid-column:1 / -1;background:linear-gradient(135deg,var(--brand-soft),var(--panel) 70%)}
+.kpi.lead .v{font-size:38px;color:var(--brand)}
+.kpi.lead .v.neg{color:var(--bad)}
+.kpi .spark{height:3px;border-radius:2px;background:var(--panel-3);margin-top:8px;overflow:hidden}
+.kpi .spark i{display:block;height:100%;background:var(--brand);border-radius:2px}
+
+
+/* ---------- charts ---------- */
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart .gridline{stroke:var(--grid);stroke-width:1}
+.chart .axislbl{fill:var(--ink-3);font-size:10px;font-weight:650;font-family:var(--font)}
+.chart .vallbl{fill:var(--ink-2);font-size:10.5px;font-weight:700;font-family:var(--nums)}
+.chart .catlbl{fill:var(--ink);font-size:11.5px;font-weight:600;font-family:var(--font)}
+.chart .mark{transition:opacity .12s}
+.chart.dim .mark{opacity:.4} .chart .mark.hot{opacity:1}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:11.5px;font-weight:650;
+  padding:6px 9px;border-radius:6px;white-space:nowrap;opacity:0;transition:opacity .12s;z-index:5;
+  transform:translate(-50%,-120%)}
+.tip.on{opacity:1}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:10px;align-items:center}
+.legend i{display:inline-flex;align-items:center;gap:6px;font-style:normal;font-size:11.5px;color:var(--ink-2);font-weight:650}
+.legend .sw{width:9px;height:9px;border-radius:2px;flex:none}
+.tablebtn{font-size:11px;color:var(--ink-3);text-decoration:underline;text-underline-offset:3px;font-weight:650}
+table.dtable{width:100%;border-collapse:collapse;font-size:12.5px}
+table.dtable th,table.dtable td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+table.dtable th{color:var(--ink-3);font-weight:750;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
+table.dtable td.n{text-align:right;font-family:var(--nums);font-weight:650}
+
+
+/* ============================================================
+   Desktop: real dashboard — fixed sidebar, dense multi-panel grid
+   ============================================================ */
+@media (min-width:1000px){
+  body{font-size:13.5px}
+  .side{display:flex;flex-direction:column;width:var(--sidebar);flex:none;position:sticky;top:0;height:100vh;
+    background:var(--panel);border-right:1px solid var(--line);padding:16px 12px}
+  .side .brandrow{display:flex;align-items:center;gap:9px;padding:4px 8px 16px}
+  .side .brandrow .mark{width:26px;height:26px;flex:none}
+  .side .brandrow .nm{font-size:14.5px;font-weight:750;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .side .seclbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);
+    font-weight:750;padding:12px 8px 6px}
+  .side a, .side .navitem{display:flex;align-items:center;gap:10px;padding:8px 9px;border-radius:var(--r-sm);
+    font-size:13.5px;font-weight:600;color:var(--ink-2);cursor:pointer;transition:background .14s,color .14s}
+  .side .navitem:hover{background:var(--panel-2);color:var(--ink)}
+  .side .navitem.on{background:var(--brand-soft);color:var(--brand);font-weight:700}
+  .side .navitem svg{width:17px;height:17px;flex:none}
+  .side .foot{margin-top:auto;padding:10px 8px 2px;border-top:1px solid var(--line);
+    font-size:11px;color:var(--ink-3);display:flex;align-items:center;gap:8px}
+  .nav{display:none}
+  .main{padding-bottom:28px}
+  .topbar{padding:14px 24px;background:var(--bg);border-bottom:1px solid var(--line);backdrop-filter:none}
+  .topbar .mark{display:none}
+  .topbar .ttl{font-size:19px;font-weight:720;letter-spacing:-.018em}
+  .wrap{padding:20px 24px;max-width:1880px}
+  .kpis{grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+  .kpis.k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .kpis.k4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .kpi.lead{grid-column:span 1;background:linear-gradient(135deg,var(--brand-soft),var(--panel) 72%)}
+  .kpi.lead .v{font-size:26px}
+  .dash{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-items:stretch}
+  .dash > .panel{margin-bottom:0}
+  .col-3{grid-column:span 3}
+  .col-4{grid-column:span 4} .col-5{grid-column:span 5} .col-6{grid-column:span 6}
+  .col-7{grid-column:span 7} .col-8{grid-column:span 8} .col-12{grid-column:span 12}
+  .toast{bottom:28px}
+}
+
+
+
+/* The overview is a grid, not masonry: column-count would slice the dashboard
+   into fragments. Views that still use the card flow keep their columns. */
+.view-in:has(.dash){column-count:initial!important;column-gap:normal!important}
+.dash{width:100%}
+
+
+/* data rows and dashboard controls — ported from One Wallet, only the
+   selectors this app did not already define */
+.dl .r{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line)}
+.dl .r:last-child{border-bottom:0}
+.dl .r:hover{background:var(--panel-2)}
+.dl .m{flex:1;min-width:0;text-align:left}
+.dl .t{font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dl .s{font-size:11.5px;color:var(--ink-3);margin-top:1px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.dl .a{font-family:var(--nums);font-weight:680;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:13.5px}
+.pos{color:var(--good)}
+.neg{color:var(--bad)}
+.swatch{width:9px;height:9px;border-radius:2px;flex:none}
+.seg{display:inline-flex;min-width:0;background:var(--panel-2);border-radius:var(--r-sm);padding:2px;gap:2px;border:1px solid var(--line)}
+.quick{display:flex;gap:8px}
+.quick .btn{flex:none}
+
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 /* ---------- desktop ----------
@@ -355,7 +485,7 @@ input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
    lost strip. Flow the cards into two balanced columns and float the nav. */
 @media (min-width:900px){
   body{padding-bottom:112px}
-  .wrap{max-width:1000px}
+  .wrap{max-width:1560px}
 
   .view-in{column-count:2; column-gap:16px}
   .view-in > *{break-inside:avoid; -webkit-column-break-inside:avoid; page-break-inside:avoid}
@@ -382,7 +512,8 @@ input,select,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
          max-height:86vh; opacity:0}
   .sheet.on{transform:translate(0,-50%) scale(1); opacity:1}
 }
-@media (min-width:1200px){ .wrap{max-width:1080px} }
+@media (min-width:1500px){ .wrap{max-width:1760px} }
+@media (min-width:1400px){ .view-in{column-count:3} }
 </style>
 </head>
 <body>
@@ -502,13 +633,48 @@ function exampleState(){
     {id:uid(),name:"Gym",amount:34,freq:"monthly",day:6,pot:B.id,payerId:B.id,sinking:false,paid:[]},
     {id:uid(),name:"Phone",amount:28,freq:"monthly",day:22,pot:A.id,payerId:A.id,sinking:false,paid:[]}
   ];
-  s.spends = [
-    {id:uid(),date:addDays(t,-1),amount:62.40,category:"Groceries",note:"weekly shop",pot:"ours",payerId:A.id},
-    {id:uid(),date:addDays(t,-2),amount:24.00,category:"Eating out",note:"",pot:"ours",payerId:B.id},
-    {id:uid(),date:addDays(t,-3),amount:14.99,category:"Subscriptions",note:"",pot:A.id,payerId:A.id},
-    {id:uid(),date:addDays(t,-4),amount:38.20,category:"Groceries",note:"",pot:"ours",payerId:B.id},
-    {id:uid(),date:addDays(t,-5),amount:9.50,category:"Transport",note:"",pot:B.id,payerId:B.id}
-  ];
+  // A full year of shared and personal spending, so the charts mean something
+  // and the settle-up total reflects a real pattern of who paid for what.
+  s.spends = [];
+  {
+    const cats = ["Groceries","Eating out","Transport","Subscriptions","Shopping","Health"];
+    const base = {Groceries:168,"Eating out":92,Transport:49,Subscriptions:26,Shopping:130,Health:63};
+    // Roughly a fifth of spending is each person's own money rather than joint,
+    // which is what the "whose is whose" split is there to handle.
+    for(let d=0; d<365; d++){
+      const date = addDays(t,-d);
+      const n = d%2===0 ? 2 : 1;
+      for(let k=0; k<n; k++){
+        const c = cats[(d+k*2)%cats.length];
+        const amount = +(base[c]*(0.55+((d*7+k*13)%70)/100)).toFixed(2);
+        const own = (d+k) % 5 === 0;
+        const who = (d+k)%2 ? A.id : B.id;
+        s.spends.push({ id:uid(), date, amount, category:c, note:"",
+                        pot: own ? who : "ours", payerId: who });
+      }
+    }
+    s.spends[0].note = "weekly shop";
+
+    // They settled up about three weeks ago, so the running balance shows a
+    // recent, believable figure instead of a year of accumulated drift.
+    const monthly = i => ({weekly:52/12, biweekly:26/12, semimonthly:2, monthly:1, once:0}[i.freq]||1) * (+i.amount||0);
+    const inA = s.incomes.filter(i=>i.personId===A.id).reduce((n,i)=>n+monthly(i),0);
+    const inB = s.incomes.filter(i=>i.personId===B.id).reduce((n,i)=>n+monthly(i),0);
+    const shA = (inA+inB) ? inA/(inA+inB) : .5;
+    const cut = addDays(t,-21);
+    let paidA=0, paidB=0, tot=0;
+    s.spends.filter(x=>x.pot==="ours" && x.date < cut).forEach(x=>{
+      tot += x.amount;
+      if(x.payerId===A.id) paidA += x.amount; else paidB += x.amount;
+    });
+    const netOld = ((paidA - tot*shA) - (paidB - tot*(1-shA))) / 2;
+    if(Math.abs(netOld) > 1){
+      s.settlements.push({ id:uid(), date:cut,
+        fromId: netOld>0 ? B.id : A.id, toId: netOld>0 ? A.id : B.id,
+        amount: +Math.abs(netOld).toFixed(2) });
+    }
+  }
+
   s.envelopes = [
     {id:uid(),name:"Groceries",limit:520,pot:"ours"},
     {id:uid(),name:"Eating out",limit:160,pot:"ours"},
@@ -795,101 +961,257 @@ function renderNav(){
 }
 
 /* ---------- TODAY ---------- */
+
+/* ---------- chart helpers + the data the charts read ---------- */
+const sVar = i => `var(--s${(i%6)+1})`;
+const moneyK = v => { const c=state.settings.currency||"$";
+  return Math.abs(v)>=1000 ? c+(v/1000).toFixed(1).replace(/\.0$/,"")+"k" : c+Math.round(v); };
+const fmtMonth = mk => { const [y,m]=mk.split("-").map(Number);
+  return new Date(y,m-1,1).toLocaleDateString(undefined,{month:"short"}); };
+
+/** Spending grouped by category over a window, biggest first. */
+function spendByCategory(days){
+  const d = days || ui.catRange || 30;
+  const m = {};
+  if(d==="month"){
+    const mk=monthKey(todayISO());
+    state.spends.filter(x=>monthKey(x.date)===mk).forEach(x=>{ const c=x.category||"Other"; m[c]=(m[c]||0)+x.amount; });
+  } else {
+    const from=addDays(todayISO(), -(+d)+1);
+    state.spends.filter(x=>x.date>=from).forEach(x=>{ const c=x.category||"Other"; m[c]=(m[c]||0)+x.amount; });
+  }
+  return Object.entries(m).map(([cat,val])=>({cat,val})).sort((a,b)=>b.val-a.val);
+}
+
+/** Who actually spent what — the question a shared budget is really about. */
+function spendByPot(days){
+  const d = days || ui.catRange || 30;
+  const from = d==="month" ? null : addDays(todayISO(), -(+d)+1);
+  const mk = monthKey(todayISO());
+  const rows = state.people.map(p=>({cat:p.name, val:0, id:p.id}));
+  rows.unshift({cat:"Ours", val:0, id:"ours"});
+  state.spends.forEach(x=>{
+    const inRange = from ? x.date>=from : monthKey(x.date)===mk;
+    if(!inRange) return;
+    const r = rows.find(r=>r.id===(x.pot||"ours")) || rows[0];
+    r.val += x.amount;
+  });
+  return rows.filter(r=>r.val>0).sort((a,b)=>b.val-a.val);
+}
+
+/** Twelve months of money in against money out. */
+function yearMonths(){
+  const out=[]; const today=todayISO();
+  for(let back=11; back>=0; back--){
+    const anchor = addMonths(today, -back);
+    const mk = monthKey(anchor);
+    const [y,mo] = mk.split("-").map(Number);
+    const first = iso(new Date(y,mo-1,1)), last = iso(new Date(y,mo,0));
+    let inM=0, outM=0;
+    state.incomes.forEach(i=>incomeDates(i,first,last).forEach(()=>{ inM += (+i.amount||0); }));
+    state.bills.forEach(b=>billDates(b,first,last).forEach(()=>{ outM += (+b.amount||0); }));
+    state.spends.filter(x=>x.date>=first&&x.date<=last).forEach(x=>{ outM += x.amount; });
+    out.push({mk, inM, outM});
+  }
+  return out;
+}
+
+/* ---------- charts (ported from One Wallet) ---------- */
+const wideLayout = () => window.innerWidth >= 1000;
+
+const layoutTier = () => window.innerWidth >= 1400 ? 2 : window.innerWidth >= 1000 ? 1 : 0;
+
+const pick = (phone, laptop, wide) => [phone, laptop, wide][layoutTier()];
+
+function chartCategories(data, id){
+  if(!data.length) return `<div class="empty">Nothing logged yet.</div>`;
+  const top = data.slice(0,6);
+  const other = data.slice(6).reduce((t,d)=>t+d.val,0);
+  const rows = other>0 ? [...top,{cat:"Other",val:other}] : top;
+  const max = Math.max(...rows.map(r=>r.val))||1;
+  const wide=wideLayout();
+  const H=30, GAP=10, LW=wide?130:94, RW=wide?80:56, W=pick(400,620,900);
+  const h = rows.length*(H+GAP)-GAP;
+  const bars = rows.map((r,i)=>{
+    const y=i*(H+GAP), w=Math.max(4,(W-LW-RW)*(r.val/max));
+    const col = r.cat==="Other" ? "var(--ink-3)" : sVar(i);
+    return `<g class="mark" data-i="${i}">
+      <text class="catlbl" x="0" y="${y+H/2+4}">${esc(r.cat.length>13?r.cat.slice(0,12)+"…":r.cat)}</text>
+      <rect x="${LW}" y="${y+4}" width="${w}" height="${H-8}" rx="4" fill="${col}"/>
+      <text class="vallbl" x="${LW+w+8}" y="${y+H/2+4}">${moneyK(r.val)}</text>
+    </g>`;
+  }).join("");
+  return `<div class="chart" id="${id}">
+    <svg viewBox="0 0 ${W} ${h}" role="img" aria-label="Spending by category">${bars}</svg>
+    <button class="tablebtn" data-act="tableCats">Show as table</button>
+  </div>`;
+}
+
+/** Change over time, one series → area + line, no legend needed. */
+
+function chartNetWorth(points, id){
+  if(points.length<2) return `<div class="empty">Add assets to see your net worth over time.</div>`;
+  const W=pick(430,760,1120), H=200, P=10, BOT=24, LEFT=4;
+  const vals=points.map(p=>p.value);
+  const lo=Math.min(...vals), hi=Math.max(...vals);
+  const pad=(hi-lo)*0.15||1, min=lo-pad, max=hi+pad;
+  const x=i=>LEFT+i*((W-LEFT-56)/(points.length-1));
+  const y=v=>P+(H-P-BOT)*(1-(v-min)/(max-min));
+  const line=points.map((p,i)=>`${i?"L":"M"}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join("");
+  const area=`${line}L${x(points.length-1).toFixed(1)},${H-BOT}L${x(0)},${H-BOT}Z`;
+  const ticks=[min,(min+max)/2,max].map(v=>
+    `<line class="gridline" x1="${LEFT}" y1="${y(v).toFixed(1)}" x2="${W-56}" y2="${y(v).toFixed(1)}"/>
+     <text class="axislbl" x="${W-52}" y="${(y(v)+3).toFixed(1)}">${moneyK(v)}</text>`).join("");
+  const dots=points.map((p,i)=>`<circle class="mark" data-i="${i}" cx="${x(i).toFixed(1)}" cy="${y(p.value).toFixed(1)}"
+      r="${i===points.length-1?5:4}" fill="var(--brand)" stroke="var(--surface)" stroke-width="2"/>`).join("");
+  const labels=points.map((p,i)=> (i%3===0||i===points.length-1)
+    ? `<text class="axislbl" x="${x(i).toFixed(1)}" y="${H-6}" text-anchor="middle">${fmtMonth(p.month)}</text>`:"").join("");
+  return `<div class="chart" id="${id}">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Net worth over time">
+      ${ticks}
+      <path d="${area}" fill="var(--brand)" opacity=".10"/>
+      <path d="${line}" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}${labels}
+    </svg><div class="tip"></div></div>`;
+}
+
+/** Two series over time → grouped bars, 2px surface gap, legend + table. */
+
+function chartYear(months, id){
+  const W=pick(500,1150,1720), H=235, BOT=26, TOP=10, RIGHT=58;
+  const max=Math.max(...months.flatMap(m=>[m.inM,m.outM]),1);
+  const bw=(W-RIGHT)/months.length, gw=bw*0.34;
+  const y=v=>TOP+(H-TOP-BOT)*(1-v/max);
+  const ticks=[0,max/2,max].map(v=>
+    `<line class="gridline" x1="0" y1="${y(v).toFixed(1)}" x2="${W-RIGHT}" y2="${y(v).toFixed(1)}"/>
+     <text class="axislbl" x="${W-RIGHT+4}" y="${(y(v)+3).toFixed(1)}">${moneyK(v)}</text>`).join("");
+  const bars=months.map((m,i)=>{
+    const cx=i*bw+bw/2;
+    const h1=Math.max(2,(H-TOP-BOT)*(m.inM/max)), h2=Math.max(2,(H-TOP-BOT)*(m.outM/max));
+    return `<g class="mark" data-i="${i}">
+      <rect x="${(cx-gw-1).toFixed(1)}" y="${y(m.inM).toFixed(1)}" width="${gw.toFixed(1)}" height="${h1.toFixed(1)}" rx="4" fill="var(--s1)"/>
+      <rect x="${(cx+1).toFixed(1)}" y="${y(m.outM).toFixed(1)}" width="${gw.toFixed(1)}" height="${h2.toFixed(1)}" rx="4" fill="var(--s2)"/>
+    </g>`;
+  }).join("");
+  const labels=months.map((m,i)=>`<text class="axislbl" x="${(i*bw+bw/2).toFixed(1)}" y="${H-6}" text-anchor="middle">${fmtMonth(m.mk)}</text>`).join("");
+  return `<div class="chart" id="${id}">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Money in and out by month">${ticks}${bars}${labels}</svg>
+    <div class="tip"></div>
+    <div class="legend"><i><span class="sw" style="background:var(--s1)"></span>Money in</i>
+      <i><span class="sw" style="background:var(--s2)"></span>Money out</i>
+      <button class="tablebtn" data-act="tableYear" style="margin-left:auto">Show as table</button></div>
+  </div>`;
+}
+
+/* ============================================================
+   Views
+   ============================================================ */
+
+const panel=(title, body, o={})=>`<div class="panel ${o.cls||""}">
+  <div class="ph"><h3>${title}</h3>${o.meta?`<span class="meta">${o.meta}</span>`:""}${o.action||""}</div>
+  <div class="pb${o.flush?" flush":""}${o.mid?" mid":""}">${body}</div>
+  ${o.foot?`<div class="pf">${o.foot}</div>`:""}</div>`;
+const kvRow=(k,v,cls)=>`<div class="kv"><span class="k">${k}</span><span class="v ${cls||""}">${v}</span></div>`;
+
 function viewToday(){
   const [A,B] = state.people;
-  const sOurs = safeToSpend("ours");
-  const sA = safeToSpend(A.id), sB = safeToSpend(B.id);
-  const np = nextPayday();
+  const sOurs = safeToSpend("ours"), sA = safeToSpend(A.id), sB = safeToSpend(B.id);
+  const np = nextPayday(), su = settleUp();
+  const t = todayISO();
+  const spent30 = state.spends.filter(x=>x.date>=addDays(t,-29)).reduce((n,x)=>n+x.amount,0);
 
   let h = "";
-
   if(state.exampleData){
-    h += `<div class="banner">
-      <strong>These are example numbers.</strong> Have a poke around — nothing here is real.
-      When you're ready, start an empty planner and four small steps get you to your own number.
-      <div class="btnrow" style="margin-top:10px">
-        <button class="btn primary sm" data-act="startFresh">Start with my numbers</button>
-      </div></div>`;
+    h += `<div class="banner"><strong>These are example numbers.</strong> Have a poke around — nothing
+      here is real. When you're ready, four small steps get you to your own.
+      <div class="btnrow" style="margin-top:9px">
+        <button class="btn primary sm" data-act="startFresh">Start with my numbers</button></div></div>`;
   }
 
-  h += `<div class="card hero">
-    ${np && sOurs.days>0 ? paydayRing(sOurs.days, np.inc) : ""}
-    <div class="label">Safe for us to spend today</div>
-    <div class="amount ${sOurs.value<0?"neg":""}">${money(sOurs.value)}</div>
-    <div class="sub">${np ? `${np.inc? esc(personName(np.inc.personId)) : "Payday"} is paid ${sOurs.days===0?"today":`in ${sOurs.days} day${sOurs.days===1?"":"s"}`} · ${fmtDate(sOurs.until)}` : "Add a paycheck to see a countdown"}</div>
-    <button class="why" data-act="whyOurs">How is this worked out?</button>
-    ${state.settings.showPersonal?`
-    <div class="pots">
-      <div class="pot a">${avatar(A.id)}<div class="pt"><div class="nm">${esc(A.name)}'s own</div><div class="vl">${money(sA.value)}</div></div></div>
-      <div class="pot b">${avatar(B.id)}<div class="pt"><div class="nm">${esc(B.name)}'s own</div><div class="vl">${money(sB.value)}</div></div></div>
-    </div>`:""}
+  // ---- the figures, across the top
+  h += `<div class="kpis">
+    <div class="kpi lead"><div class="k">Safe for us to spend</div>
+      <div class="v ${sOurs.value<0?"neg":""}">${money0(sOurs.value)}</div>
+      <div class="d">${np ? `${np.inc?esc(personName(np.inc.personId)):"Payday"} paid ${sOurs.days===0?"today":`in ${sOurs.days} day${sOurs.days===1?"":"s"}`} · ${fmtDate(sOurs.until)}` : "add a paycheck"}</div></div>
+    <div class="kpi"><div class="k">${esc(A.name)}'s own</div><div class="v">${money0(sA.value)}</div>
+      <div class="d">their own money</div></div>
+    <div class="kpi"><div class="k">${esc(B.name)}'s own</div><div class="v">${money0(sB.value)}</div>
+      <div class="d">their own money</div></div>
+    <div class="kpi"><div class="k">Settle up</div><div class="v">${money0(Math.abs(su.net))}</div>
+      <div class="d">${Math.abs(su.net)<1 ? "all square" : (su.net>0?`${esc(B.name)} owes ${esc(A.name)}`:`${esc(A.name)} owes ${esc(B.name)}`)}</div></div>
+    <div class="kpi"><div class="k">Spent · 30 days</div><div class="v">${money0(spent30)}</div>
+      <div class="d">${state.spends.filter(x=>x.date>=addDays(t,-29)).length} entries</div></div>
   </div>`;
 
-  // Right now — one thing only
   const rn = nextAction();
-  if(rn) h += `<div class="card card-tight rightnow">
-      <div class="txt"><div class="t1">Right now</div><div class="t2">${rn.text}</div></div>
-      <button class="btn sm primary" data-act="${rn.act}" ${rn.data||""}>${rn.cta}</button>
-    </div>`;
+  const rnPanel = rn ? `<div class="panel accent col-12"><div class="pb" style="display:flex;align-items:center;gap:12px">
+      <div style="flex:1"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--brand);font-weight:800">Next step</div>
+      <div style="font-size:13.5px;font-weight:600;margin-top:2px">${rn.text}</div></div>
+      <button class="btn sm primary" data-act="${rn.act}" ${rn.data||""}>${rn.cta}</button></div></div>` : "";
 
-  // Settle up nudge
-  const su = settleUp();
-  if(Math.abs(su.net) >= 1){
-    const ower = su.net>0 ? B : A, owed = su.net>0 ? A : B;
-    h += `<div class="card card-tight" style="display:flex;align-items:center;gap:12px">
-      ${avatar(ower.id)}
-      <div class="main" style="flex:1">
-        <div class="nm">${esc(ower.name)} owes ${esc(owed.name)}</div>
-        <div class="meta">Based on joint spending and your fair share</div>
-      </div>
-      <div class="amt">${money(Math.abs(su.net))}</div>
-      <button class="btn sm" data-tab="split">Settle</button>
-    </div>`;
-  }
+  // ---- charts
+  const cats = spendByCategory();
+  const catTotal = cats.reduce((n,c)=>n+c.val,0);
+  const catPanel = panel("Spending by category", chartCategories(cats,"catChart"), {
+    cls:"col-8", mid:true, meta:`${catRangeLabel()} · ${money0(catTotal)}`,
+    action:`<div class="seg" style="margin-left:10px">
+      <button data-cat="30" class="${ui.catRange==30||!ui.catRange?"on":""}">30d</button>
+      <button data-cat="90" class="${ui.catRange==90?"on":""}">90d</button>
+      <button data-cat="month" class="${ui.catRange==="month"?"on":""}">Month</button></div>`,
+    foot: kvRow("Biggest", cats[0]? esc(cats[0].cat)+" · "+money(cats[0].val) : "—")
+        + kvRow("Categories", String(cats.length))});
 
-  // Quick add
-  h += `<div class="card">
-    <h3>Log a spend</h3>
-    <div class="quick">
-      <input id="qInput" placeholder="e.g. 45 groceries" autocomplete="off" enterkeyhint="done">
-      <button class="btn primary" data-act="quickAdd">Add</button>
-    </div>
-    <div class="chips" id="potChips">
-      <button class="chip ${ui.spendPot==="ours"?"on":""}" data-pot="ours">Ours</button>
-      <button class="chip a ${ui.spendPot===A.id?"on":""}" data-pot="${A.id}">${esc(A.name)}'s</button>
-      <button class="chip b ${ui.spendPot===B.id?"on":""}" data-pot="${B.id}">${esc(B.name)}'s</button>
-    </div>
-    <div class="chips" style="margin-top:8px">
-      <span class="muted" style="font-size:12.5px;align-self:center;margin-right:2px">Paid by</span>
-      <button class="chip a ${ui.spendPayer===A.id?"on":""}" data-payer="${A.id}">${avatar(A.id,"sm")}${esc(A.name)}</button>
-      <button class="chip b ${ui.spendPayer===B.id?"on":""}" data-payer="${B.id}">${avatar(B.id,"sm")}${esc(B.name)}</button>
-    </div>
-  </div>`;
+  const pots = spendByPot();
+  const potPanel = panel("Who spent what", chartCategories(pots,"potChart"),
+    {cls:"col-4", mid:true, meta:catRangeLabel(),
+     foot: kvRow("Shared", money(((pots.find(p=>p.cat==="Ours")||{}).val)||0))
+         + kvRow("Own money", money(pots.filter(p=>p.cat!=="Ours").reduce((n,p)=>n+p.val,0)))});
 
-  // Recent spends
-  const recent = [...state.spends].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).slice(0,6);
-  h += `<div class="card"><h3>Recent</h3>`;
-  h += recent.length ? recent.map(s=>`
-    <div class="row">
-      <div class="main">
-        <div class="nm">${esc(s.category||"Spend")}${s.note?` <span class="muted">· ${esc(s.note)}</span>`:""}</div>
-        <div class="meta">${fmtDate(s.date)} · <span class="tag ${potClass(s.pot)}">${esc(potLabel(s.pot))}</span> · paid by ${esc(personName(s.payerId))}</div>
-      </div>
-      <div class="amt">${money(s.amount)}</div>
-      <button class="iconbtn" data-act="editSpend" data-id="${s.id}" aria-label="Edit">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-      </button>
-    </div>`).join("") : `<div class="empty">Nothing logged yet.</div>`;
-  h += `</div>`;
+  const ym = yearMonths();
+  const inSum = ym.reduce((n,m)=>n+m.inM,0), outSum = ym.reduce((n,m)=>n+m.outM,0);
+  const yearPanel = panel("Money in and out", chartYear(ym,"yearChart"), {cls:"col-12", meta:"last 12 months",
+    foot:`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+      ${kvRow("Money in", money(inSum), "pos")}${kvRow("Money out", money(outSum))}
+      ${kvRow("Kept", money(inSum-outSum), inSum-outSum>=0?"pos":"neg")}</div>`});
 
-  // Run to payday
-  if(np){
-    h += `<div class="card"><h3>Run to ${esc(personName(np.inc.personId))}'s payday</h3>${runToPayday()}</div>`;
-  }
+  // ---- lists
+  const upcoming=[];
+  state.bills.forEach(b=>billDates(b,t,addDays(t,32)).forEach(d=>{ if(!billPaid(b,d)) upcoming.push({b,d}); }));
+  upcoming.sort((x,y)=>x.d.localeCompare(y.d));
+  const billsPanel = panel("Upcoming bills", upcoming.length? `<div class="dl cap">${upcoming.slice(0,9).map(({b,d})=>`
+      <div class="r"><div class="m"><div class="t">${esc(b.name)}</div><div class="s">${fmtDate(d)}</div></div>
+      <div class="a">${money(b.amount)}</div></div>`).join("")}</div>`
+    : `<div class="empty">Nothing due in the next month.</div>`,
+    {cls:"col-4", flush:true, meta:`${upcoming.length} due`,
+     foot: kvRow("Due in the next month", money(upcoming.reduce((n,u)=>n+u.b.amount,0)))});
+
+  const settlePanel = panel("Settle up", Math.abs(su.net)>=1
+    ? `<div style="text-align:center;padding:6px 0 2px">
+         <div style="font-size:12px;color:var(--ink-2);font-weight:650">${su.net>0?`${esc(B.name)} owes ${esc(A.name)}`:`${esc(A.name)} owes ${esc(B.name)}`}</div>
+         <div style="font-family:var(--nums);font-size:34px;font-weight:750;margin:6px 0 10px">${money(Math.abs(su.net))}</div>
+         <button class="btn primary sm" data-act="settle">Mark as settled</button></div>`
+    : `<div class="empty">All square. Nothing to settle.</div>`,
+    {cls:"col-4", foot: kvRow("Joint costs counted", money(su.joint||0))});
+
+  const recent=[...state.spends].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+  const logPanel = panel("Log a spend",
+    `<div class="quick"><input id="qInput" placeholder="e.g. 45 groceries" autocomplete="off" enterkeyhint="done">
+      <button class="btn primary" data-act="quickAdd">Add</button></div>
+     <div class="dl cap" style="margin:10px -14px -14px">${recent.map(x=>`
+       <div class="r"><div class="m"><div class="t">${esc(x.category||"Spend")}</div>
+       <div class="s">${fmtDate(x.date)}</div></div><div class="a">${money(x.amount)}</div></div>`).join("")}</div>`,
+    {cls:"col-4"});
+
+  h += `<div class="dash">${rnPanel}${catPanel}${potPanel}${yearPanel}${billsPanel}${settlePanel}${logPanel}</div>`;
   return h;
 }
 
-/** Circular countdown to the next payday. */
+function catRangeLabel(){
+  const d = ui.catRange || 30;
+  return d==="month" ? "this month" : `last ${d} days`;
+}
+
+
 function paydayRing(days, inc){
   const cycle = {weekly:7, biweekly:14, semimonthly:15, monthly:30, once:30}[inc && inc.freq] || 14;
   const done = clamp((cycle - days) / cycle, 0, 1);
@@ -1002,64 +1324,78 @@ function viewSplit(){
   const [A,B]=state.people;
   const su = settleUp(), sh = su.sh;
   const pa = Math.round(sh[A.id]*100), pb = 100-pa;
-  const m = state.settings.splitMethod;
+  const mth = state.settings.splitMethod;
+  const t = todayISO();
 
-  let h = `<div class="card">
-    <h3>How you split joint costs</h3>
-    <div class="seg" id="splitSeg">
-      <button data-split="income" class="${m==="income"?"on":""}">By income</button>
-      <button data-split="even" class="${m==="even"?"on":""}">50 / 50</button>
-      <button data-split="custom" class="${m==="custom"?"on":""}">Custom</button>
+  // Joint spending only — the pot the split is actually about.
+  const jointCats = (()=>{ const mm={};
+    const from = addDays(t,-29);
+    state.spends.filter(x=>x.pot==="ours" && x.date>=from)
+      .forEach(x=>{ const c=x.category||"Other"; mm[c]=(mm[c]||0)+x.amount; });
+    return Object.entries(mm).map(([cat,val])=>({cat,val})).sort((a,b)=>b.val-a.val); })();
+
+  // Paid against fair share, side by side — the whole argument in one chart.
+  const fair = [
+    {cat:`${A.name} paid`,  val:su.paidA},
+    {cat:`${A.name}'s share`, val:su.oweA},
+    {cat:`${B.name} paid`,  val:su.paidB},
+    {cat:`${B.name}'s share`, val:su.oweB}
+  ];
+
+  let h = `<div class="kpis k4">
+    <div class="kpi lead"><div class="k">Settle up</div>
+      <div class="v">${money0(Math.abs(su.net))}</div>
+      <div class="d">${Math.abs(su.net)<1?"all square":`${esc(su.net>0?B.name:A.name)} owes ${esc(su.net>0?A.name:B.name)}`}</div></div>
+    <div class="kpi"><div class="k">Joint costs counted</div><div class="v">${money0(su.total)}</div>
+      <div class="d">shared spending and bills</div></div>
+    <div class="kpi"><div class="k">${esc(A.name)}'s share</div><div class="v">${pa}%</div>
+      <div class="d">${money0(su.oweA)} of the total</div></div>
+    <div class="kpi"><div class="k">${esc(B.name)}'s share</div><div class="v">${pb}%</div>
+      <div class="d">${money0(su.oweB)} of the total</div></div>
+  </div><div class="dash">`;
+
+  h += panel("How you split joint costs", `
+    <div class="seg" id="splitSeg" style="width:100%">
+      <button data-split="income" class="${mth==="income"?"on":""}" style="flex:1">By income</button>
+      <button data-split="even" class="${mth==="even"?"on":""}" style="flex:1">50 / 50</button>
+      <button data-split="custom" class="${mth==="custom"?"on":""}" style="flex:1">Custom</button>
     </div>
-    <div class="split-vis"><i class="a" style="flex:${Math.max(pa,8)}">${esc(A.name)} ${pa}%</i><i class="b" style="flex:${Math.max(pb,8)}">${esc(B.name)} ${pb}%</i></div>
-    ${m==="income"?`<div class="hint muted" style="font-size:12.5px">Worked out from take-home pay: ${esc(A.name)} ${money0(monthlyIncome(A.id))}/mo, ${esc(B.name)} ${money0(monthlyIncome(B.id))}/mo. Nobody has to do percentages in their head.</div>`:""}
-    ${m==="custom"?`<div class="field" style="margin-top:10px"><label>${esc(A.name)}'s share (%)</label>
-      <input type="number" min="0" max="100" id="customSplit" value="${clamp(Number(state.settings.customSplit)||50,0,100)}"></div>`:""}
-  </div>`;
+    <div class="split-vis" style="margin-top:12px"><i class="a" style="flex:${Math.max(pa,8)}">${esc(A.name)} ${pa}%</i><i class="b" style="flex:${Math.max(pb,8)}">${esc(B.name)} ${pb}%</i></div>
+    ${mth==="income"?`<div class="hint muted" style="font-size:12.5px;margin-top:10px">Worked out from take-home pay:
+      ${esc(A.name)} ${money0(monthlyIncome(A.id))}/mo, ${esc(B.name)} ${money0(monthlyIncome(B.id))}/mo.
+      Nobody has to do percentages in their head.</div>`:""}
+    ${mth==="custom"?`<div class="field" style="margin-top:10px"><label>${esc(A.name)}'s share (%)</label>
+      <input type="number" min="0" max="100" id="customSplit" value="${clamp(Number(state.settings.customSplit)||50,0,100)}"></div>`:""}`,
+    {cls:"col-4"});
 
-  h += `<div class="card">
-    <h3>Settle up</h3>
-    ${Math.abs(su.net)<1
-      ? `<div class="empty">You're square. Nothing to settle.</div>`
-      : `<div style="text-align:center;padding:8px 0 14px">
-          <div class="muted" style="font-size:13.5px">${esc(su.net>0?B.name:A.name)} owes ${esc(su.net>0?A.name:B.name)}</div>
-          <div style="font-size:34px;font-weight:700;letter-spacing:-.02em;color:${su.net>0?"var(--b)":"var(--a)"}">${money(Math.abs(su.net))}</div>
-         </div>
-         <button class="btn primary block" data-act="settle">Mark as settled</button>`}
-    <div style="margin-top:14px">
-      <div class="kv"><span class="k">Joint costs counted</span><span class="v">${money(su.total)}</span></div>
-      <div class="kv"><span class="k">${esc(A.name)} paid</span><span class="v">${money(su.paidA)}</span></div>
-      <div class="kv"><span class="k">${esc(A.name)}'s fair share</span><span class="v">${money(su.oweA)}</span></div>
-      <div class="kv"><span class="k">${esc(B.name)} paid</span><span class="v">${money(su.paidB)}</span></div>
-      <div class="kv"><span class="k">${esc(B.name)}'s fair share</span><span class="v">${money(su.oweB)}</span></div>
-    </div>
-  </div>`;
+  h += panel("Paid against fair share", chartCategories(fair,"fairChart"),
+    {cls:"col-5", mid:true, meta:"since you last settled",
+     foot: kvRow(`${esc(A.name)} is `+(su.paidA>su.oweA?"ahead by":"behind by"), money(Math.abs(su.paidA-su.oweA)))});
 
-  if(state.settlements.length){
-    h += `<div class="card"><h3>Settled before</h3>` +
-      [...state.settlements].reverse().slice(0,10).map(s=>`
-        <div class="row"><div class="main">
-          <div class="nm">${esc(personName(s.fromId))} → ${esc(personName(s.toId))}</div>
-          <div class="meta">${fmtDate(s.date)}</div>
-        </div><div class="amt">${money(s.amount)}</div></div>`).join("") + `</div>`;
-  }
+  h += panel("Settle up", Math.abs(su.net)<1
+    ? `<div class="empty">You're square. Nothing to settle.</div>`
+    : `<div style="text-align:center;padding:4px 0 12px">
+        <div class="muted" style="font-size:13px">${esc(su.net>0?B.name:A.name)} owes ${esc(su.net>0?A.name:B.name)}</div>
+        <div style="font-family:var(--nums);font-size:36px;font-weight:760;letter-spacing:-.02em;margin:6px 0 12px">${money(Math.abs(su.net))}</div>
+        <button class="btn primary" data-act="settle">Mark as settled</button></div>`,
+    {cls:"col-3", foot: kvRow(`${esc(A.name)} paid`, money(su.paidA)) + kvRow(`${esc(B.name)} paid`, money(su.paidB))});
 
-  h += `<div class="card"><h3>Money in</h3>` +
-    (state.incomes.length ? state.incomes.map(i=>`
-      <div class="row"><div class="main">
-        <div class="nm">${esc(i.name)}</div>
-        <div class="meta"><span class="tag ${potClass(i.personId)}">${esc(personName(i.personId))}</span>
-          · ${({weekly:"every week",biweekly:"every 2 weeks",semimonthly:"twice a month",monthly:"monthly",once:"one-off"})[i.freq]}
-          ${i.autoSave?` · ${i.autoSave}% auto-saved`:""}</div>
-      </div><div class="amt">${money(i.amount)}</div>
-      <button class="iconbtn" data-act="editIncome" data-id="${i.id}" aria-label="Edit">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
-      </button></div>`).join("") : `<div class="empty">No income added yet.</div>`) +
-    `<div style="margin-top:12px"><button class="btn block ghost" data-act="addIncome">+ Add a paycheck</button></div></div>`;
+  h += panel("Joint spending by category", chartCategories(jointCats,"jointChart"),
+    {cls:"col-7", mid:true, meta:"last 30 days",
+     foot: kvRow("Shared in the last 30 days", money(jointCats.reduce((n,c)=>n+c.val,0)))});
+
+  h += panel("Settled before", state.settlements.length
+    ? `<div class="dl cap">${[...state.settlements].reverse().slice(0,8).map(x=>`
+        <div class="r"><div class="m"><div class="t">${esc(personName(x.fromId))} → ${esc(personName(x.toId))}</div>
+        <div class="s">${fmtDate(x.date)}</div></div><div class="a">${money(x.amount)}</div></div>`).join("")}</div>`
+    : `<div class="empty">Nothing settled yet.</div>`,
+    {cls:"col-5", flush:true});
+
+  h += `</div>`;
   return h;
 }
 
-/* ---------- PLAN ---------- */
+
 function viewPlan(){
   let h = `<div class="card"><h3>This month</h3>${calendar()}</div>`;
 
