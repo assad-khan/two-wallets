@@ -435,8 +435,12 @@ table.dtable td.n{text-align:right;font-family:var(--nums);font-weight:650}
   .side .navitem svg{width:17px;height:17px;flex:none}
   .side .foot{margin-top:auto;padding:10px 8px 2px;border-top:1px solid var(--line);
     font-size:11px;color:var(--ink-3);display:flex;align-items:center;gap:8px}
-  .nav{display:none}
+  /* One Wallet swaps the bottom bar for a sidebar on desktop; this app has
+     no sidebar, so the bar has to stay or there is no navigation. */
+  .nav{max-width:560px;left:50%;transform:translateX(-50%);border-radius:16px 16px 0 0;
+       border:1px solid var(--line);border-bottom:0;box-shadow:0 -8px 30px -14px rgba(0,0,0,.3)}
   .main{padding-bottom:28px}
+  .wrap{padding-bottom:96px}
   .topbar{padding:14px 24px;background:var(--bg);border-bottom:1px solid var(--line);backdrop-filter:none}
   .topbar .mark{display:none}
   .topbar .ttl{font-size:19px;font-weight:720;letter-spacing:-.018em}
