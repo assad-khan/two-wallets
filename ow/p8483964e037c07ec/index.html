@@ -534,8 +534,12 @@ const SERIES = ["--s1","--s2","--s3","--s4","--s5","--s6"];
 const sVar = i => `var(${SERIES[i % SERIES.length]})`;
 
 /** Magnitude by identity → horizontal bars, direct labels (relief for low-contrast slot). */
-/** The dashboard grid and the chart canvases switch at the same breakpoint. */
+/** The dashboard grid switches at 1000px, but a 1024px screen gives each
+    column barely 600px. One canvas for every desktop width therefore squashed
+    the charts on small laptops, so size them in three tiers instead. */
 const wideLayout = () => window.innerWidth >= 1000;
+const layoutTier = () => window.innerWidth >= 1400 ? 2 : window.innerWidth >= 1000 ? 1 : 0;
+const pick = (phone, laptop, wide) => [phone, laptop, wide][layoutTier()];
 
 function chartCategories(data, id){
   if(!data.length) return `<div class="empty">Nothing logged yet.</div>`;
@@ -544,7 +548,7 @@ function chartCategories(data, id){
   const rows = other>0 ? [...top,{cat:"Other",val:other}] : top;
   const max = Math.max(...rows.map(r=>r.val))||1;
   const wide=wideLayout();
-  const H=30, GAP=10, LW=wide?130:94, RW=wide?80:56, W=wide?900:400;
+  const H=30, GAP=10, LW=wide?130:94, RW=wide?80:56, W=pick(400,620,900);
   const h = rows.length*(H+GAP)-GAP;
   const bars = rows.map((r,i)=>{
     const y=i*(H+GAP), w=Math.max(4,(W-LW-RW)*(r.val/max));
@@ -564,7 +568,7 @@ function chartCategories(data, id){
 /** Change over time, one series → area + line, no legend needed. */
 function chartNetWorth(points, id){
   if(points.length<2) return `<div class="empty">Add assets to see your net worth over time.</div>`;
-  const W=wideLayout()?1120:430, H=200, P=10, BOT=24, LEFT=4;
+  const W=pick(430,760,1120), H=200, P=10, BOT=24, LEFT=4;
   const vals=points.map(p=>p.value);
   const lo=Math.min(...vals), hi=Math.max(...vals);
   const pad=(hi-lo)*0.15||1, min=lo-pad, max=hi+pad;
@@ -590,7 +594,7 @@ function chartNetWorth(points, id){
 
 /** Two series over time → grouped bars, 2px surface gap, legend + table. */
 function chartYear(months, id){
-  const W=wideLayout()?1720:500, H=235, BOT=26, TOP=10, RIGHT=58;
+  const W=pick(500,1150,1720), H=235, BOT=26, TOP=10, RIGHT=58;
   const max=Math.max(...months.flatMap(m=>[m.inM,m.outM]),1);
   const bw=(W-RIGHT)/months.length, gw=bw*0.34;
   const y=v=>TOP+(H-TOP-BOT)*(1-v/max);
@@ -1419,8 +1423,8 @@ $("#sheetClose").addEventListener("click",closeSheet);
   ui.tab=b.dataset.tab; scrollTo(0,0); render(); }));
 $("#themeBtn").addEventListener("click",()=>{ state.settings.theme=state.settings.theme==="midnight"?"soft":"midnight"; save(); render(); });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeSheet(); });
-let _wide = wideLayout();
-addEventListener("resize",()=>{ const w=wideLayout(); if(w!==_wide){ _wide=w; render(); } });
+let _tier = layoutTier();
+addEventListener("resize",()=>{ const t=layoutTier(); if(t!==_tier){ _tier=t; render(); } });
 
 /* ---------- boot ---------- */
 state=load();
