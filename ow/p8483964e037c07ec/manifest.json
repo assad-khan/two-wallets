@@ -1,0 +1,16 @@
+{
+  "name": "One Wallet — a calm money dashboard",
+  "short_name": "One Wallet",
+  "description": "Safe-to-spend, bills, spending, goals, debt and net worth. Works offline. No account, no subscription.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f2ec",
+  "theme_color": "#f6f2ec",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
