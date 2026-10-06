@@ -123,8 +123,8 @@ input,select,textarea{font-family:inherit;font-size:14px;color:var(--ink)}
 .btn.sm{padding:6px 10px;font-size:12.5px}
 .btn.block{width:100%} .btn.danger{color:var(--bad)}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap}
-.seg{display:inline-flex;background:var(--panel-2);border-radius:var(--r-sm);padding:2px;gap:2px;border:1px solid var(--line)}
-.seg button{padding:5px 11px;border-radius:5px;font-size:12px;font-weight:650;color:var(--ink-2)}
+.seg{display:inline-flex;min-width:0;background:var(--panel-2);border-radius:var(--r-sm);padding:2px;gap:2px;border:1px solid var(--line)}
+.seg button{min-width:0;padding:5px 11px;border-radius:5px;font-size:12px;font-weight:650;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .seg button.on{background:var(--panel);color:var(--ink);box-shadow:var(--sh)}
 .quick{display:flex;gap:8px}
 .quick input{flex:1;min-width:0;padding:9px 12px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--panel-2);font-size:13.5px}
@@ -1021,12 +1021,11 @@ function viewMore(){
   let h=`<div class="dash">`;
   h+=panel("Your dashboard",
     `<div class="field"><label>What to call it</label><input id="owName" value="${esc(state.settings.name)}" placeholder="My money"></div>
-     <div class="grid2">
-       <div class="field"><label>Currency</label><select id="currency">${["$","£","€","¥","kr","zł","₹","C$","A$","R","CHF","฿","₺"].map(c=>`<option ${state.settings.currency===c?"selected":""}>${c}</option>`).join("")}</select></div>
-       <div class="field"><label>Theme</label><div class="seg" style="width:100%">
-         <button data-theme="soft" class="${state.settings.theme!=="midnight"?"on":""}" style="flex:1">Soft</button>
-         <button data-theme="midnight" class="${state.settings.theme==="midnight"?"on":""}" style="flex:1">Midnight</button></div></div>
-     </div>`, {cls:"col-4"});
+     <div class="field"><label>Currency</label><select id="currency">${["$","£","€","¥","kr","zł","₹","C$","A$","R","CHF","฿","₺"].map(c=>`<option ${state.settings.currency===c?"selected":""}>${c}</option>`).join("")}</select></div>
+     <div class="field"><label>Theme</label><div class="seg" style="width:100%">
+       <button data-theme="soft" class="${state.settings.theme!=="midnight"?"on":""}" style="flex:1">Soft</button>
+       <button data-theme="midnight" class="${state.settings.theme==="midnight"?"on":""}" style="flex:1">Midnight</button></div></div>`,
+    {cls:"col-4"});
   h+=panel("Accounts",
     `<div class="dl">${state.accounts.map(a=>`<div class="r"><div class="m"><div class="t">${esc(a.name)}</div>
       <div class="s">${a.kind==="save"?"savings — never counted as spendable":"spending"}</div></div>
