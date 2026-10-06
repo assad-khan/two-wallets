@@ -381,12 +381,13 @@ function exampleState(){
     const date=addDays(t,-d);
     const n = d%3===0 ? 2 : 1;
     for(let i=0;i<n;i++){
-      const c=cats[(d*2+i)%cats.length];
+      const c=cats[(d+i*2)%cats.length];   // stride 1 so every category appears
       s.spends.push({id:uid(),date,amount:+(base[c]*(0.6+((d*7+i*13)%60)/100)).toFixed(2),category:c,note:"",seed:true});
     }
   }
   s.envelopes=[{id:uid(),name:"Groceries",limit:480},{id:uid(),name:"Eating out",limit:160},
-               {id:uid(),name:"Transport",limit:120},{id:uid(),name:"Shopping",limit:150}];
+               {id:uid(),name:"Transport",limit:120},{id:uid(),name:"Shopping",limit:150},
+               {id:uid(),name:"Subscriptions",limit:60},{id:uid(),name:"Health",limit:90}];
   s.goals=[{id:uid(),name:"Emergency fund",target:6000,saved:3250,monthly:250},
            {id:uid(),name:"New laptop",target:1400,saved:380,monthly:100}];
   s.debts=[{id:uid(),name:"Credit card",balance:1480,rate:21.9,minimum:55,payments:[]},
