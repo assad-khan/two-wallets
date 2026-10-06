@@ -375,7 +375,7 @@ function exampleState(){
     const n = d%3===0 ? 2 : 1;
     for(let i=0;i<n;i++){
       const c=cats[(d*2+i)%cats.length];
-      s.spends.push({id:uid(),date,amount:+(base[c]*(0.6+((d*7+i*13)%60)/100)).toFixed(2),category:c,note:""});
+      s.spends.push({id:uid(),date,amount:+(base[c]*(0.6+((d*7+i*13)%60)/100)).toFixed(2),category:c,note:"",seed:true});
     }
   }
   s.envelopes=[{id:uid(),name:"Groceries",limit:480},{id:uid(),name:"Eating out",limit:160},
@@ -1274,9 +1274,13 @@ function matchCategory(raw){ const c=String(raw||"").trim(); if(!c) return "Spen
   const hit=known.find(k=>k.toLowerCase()===c.toLowerCase());
   return hit || c.charAt(0).toUpperCase()+c.slice(1); }
 
+/** Spends the visitor typed themselves — example data must not count towards
+    the demo cap, or a seeded demo is full before anyone opens it. */
+const demoLogged = () => state.spends.filter(s => !s.seed).length;
+
 function quickAdd(){ const el=$("#qInput"); if(!el) return;
   const raw=el.value.trim(); if(!raw) return;
-  if(DEMO && state.spends.length>=DEMO_SPEND_CAP) return toast("The demo stops at "+DEMO_SPEND_CAP+" spends. Everything you typed is still here.");
+  if(DEMO && demoLogged()>=DEMO_SPEND_CAP) return toast("The demo stops at "+DEMO_SPEND_CAP+" spends you log yourself. Everything you typed is still here.");
   const m=raw.match(/^\s*([\d.,]+)\s*(.*)$/); if(!m) return toast('Try something like "45 groceries".');
   const amount=Number(m[1].replace(/,/g,"")); if(!isFinite(amount)||amount<=0) return toast("That amount didn't look right.");
   state.spends.push({id:uid(),date:todayISO(),amount,category:matchCategory(m[2]),note:""});
@@ -1306,7 +1310,7 @@ function csv(){ const rows=[["Date","Amount","Category","Note"]];
   setTimeout(()=>URL.revokeObjectURL(a.href),2000); toast("CSV downloaded."); }
 
 function demoBar(){ const bar=$("#demoBar"); bar.classList.remove("hidden");
-  const left=Math.max(0,DEMO_SPEND_CAP-state.spends.length);
+  const left=Math.max(0,DEMO_SPEND_CAP-demoLogged());
   bar.innerHTML = left>0 ? `Free demo — the whole app, no watermark. ${left} spend${left===1?"":"s"} left to log.`
     : `Free demo — you've logged ${DEMO_SPEND_CAP} spends. Everything is still readable. Tap <strong>Download a backup</strong> in More to carry it into the full planner.`; }
 
