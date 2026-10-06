@@ -77,7 +77,7 @@ input,select,textarea{font-family:inherit;font-size:14px;color:var(--ink)}
 .panel > .pf{margin-top:auto;border-top:1px solid var(--line);background:var(--panel-2);padding:9px 14px}
 .panel > .pf .kv{padding:2px 0;font-size:12.5px}
 /* A long list must not set the height of a whole dashboard row. */
-.dl.cap{max-height:316px;overflow-y:auto;overscroll-behavior:contain}
+.dl.cap{max-height:264px;overflow-y:auto;overscroll-behavior:contain}
 .dl.cap::-webkit-scrollbar{width:7px}
 .dl.cap::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:4px}
 .panel > .pb.flush{padding:0}
@@ -103,7 +103,7 @@ input,select,textarea{font-family:inherit;font-size:14px;color:var(--ink)}
 .dl .r{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line)}
 .dl .r:last-child{border-bottom:0}
 .dl .r:hover{background:var(--panel-2)}
-.dl .m{flex:1;min-width:0}
+.dl .m{flex:1;min-width:0;text-align:left}
 .dl .t{font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dl .s{font-size:11.5px;color:var(--ink-3);margin-top:1px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .dl .a{font-family:var(--nums);font-weight:680;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:13.5px}
@@ -222,6 +222,12 @@ table.dtable td.n{text-align:right;font-family:var(--nums);font-weight:650}
 .sheet .sb{padding:16px}
 .grab{width:34px;height:4px;border-radius:2px;background:var(--line-2);margin:8px auto 0}
 
+@media (max-width:999px){
+  .panel > .ph{flex-wrap:wrap;row-gap:8px}
+  .panel > .ph .seg{margin-left:0!important;width:100%}
+  .panel > .ph .seg button{flex:1}
+  .panel > .pf > div[style*="grid"]{grid-template-columns:1fr!important}
+}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 /* ============================================================
@@ -538,7 +544,8 @@ function chartCategories(data, id){
   const other = data.slice(6).reduce((t,d)=>t+d.val,0);
   const rows = other>0 ? [...top,{cat:"Other",val:other}] : top;
   const max = Math.max(...rows.map(r=>r.val))||1;
-  const H=30, GAP=10, LW=130, RW=80, W=wideLayout()?900:620;
+  const wide=wideLayout();
+  const H=30, GAP=10, LW=wide?130:94, RW=wide?80:56, W=wide?900:400;
   const h = rows.length*(H+GAP)-GAP;
   const bars = rows.map((r,i)=>{
     const y=i*(H+GAP), w=Math.max(4,(W-LW-RW)*(r.val/max));
@@ -558,7 +565,7 @@ function chartCategories(data, id){
 /** Change over time, one series → area + line, no legend needed. */
 function chartNetWorth(points, id){
   if(points.length<2) return `<div class="empty">Add assets to see your net worth over time.</div>`;
-  const W=wideLayout()?1120:580, H=200, P=10, BOT=24, LEFT=4;
+  const W=wideLayout()?1120:430, H=200, P=10, BOT=24, LEFT=4;
   const vals=points.map(p=>p.value);
   const lo=Math.min(...vals), hi=Math.max(...vals);
   const pad=(hi-lo)*0.15||1, min=lo-pad, max=hi+pad;
@@ -584,7 +591,7 @@ function chartNetWorth(points, id){
 
 /** Two series over time → grouped bars, 2px surface gap, legend + table. */
 function chartYear(months, id){
-  const W=wideLayout()?1720:620, H=235, BOT=26, TOP=10, RIGHT=58;
+  const W=wideLayout()?1720:500, H=235, BOT=26, TOP=10, RIGHT=58;
   const max=Math.max(...months.flatMap(m=>[m.inM,m.outM]),1);
   const bw=(W-RIGHT)/months.length, gw=bw*0.34;
   const y=v=>TOP+(H-TOP-BOT)*(1-v/max);
@@ -713,8 +720,14 @@ function viewToday(){
       <button class="btn sm primary" data-act="${rn.act}" ${rn.data||""}>${rn.cta}</button></div></div>` : "";
 
   const cats=spendByCategory();
+  const catTotal = cats.reduce((x,c)=>x+c.val,0);
+  const catTop = cats[0];
   const catPanel = panel("Spending by category", chartCategories(cats,"catChart"), {
-    cls:"col-8", mid:true, meta:`${catRangeLabel()} · ${money0(cats.reduce((x,c)=>x+c.val,0))}`,
+    cls:"col-8", mid:true, meta:`${catRangeLabel()} · ${money0(catTotal)}`,
+    foot:`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+      ${kvRow("Biggest", catTop? esc(catTop.name)+" · "+money(catTop.val) : "—")}
+      ${kvRow("Share of the total", catTop&&catTotal? Math.round(catTop.val/catTotal*100)+"%" : "—")}
+      ${kvRow("Categories", String(cats.length))}</div>`,
     action:`<div class="seg" style="margin-left:10px">
       <button data-cat="30" class="${ui.catRange==30?"on":""}">30d</button>
       <button data-cat="90" class="${ui.catRange==90?"on":""}">90d</button>
