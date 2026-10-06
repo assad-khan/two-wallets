@@ -127,7 +127,8 @@ input,select,textarea{font-family:inherit;font-size:14px;color:var(--ink)}
 .seg button{padding:5px 11px;border-radius:5px;font-size:12px;font-weight:650;color:var(--ink-2)}
 .seg button.on{background:var(--panel);color:var(--ink);box-shadow:var(--sh)}
 .quick{display:flex;gap:8px}
-.quick input{flex:1;padding:9px 12px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--panel-2);font-size:13.5px}
+.quick input{flex:1;min-width:0;padding:9px 12px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--panel-2);font-size:13.5px}
+.quick .btn{flex:none}
 .quick input:focus{outline:none;background:var(--panel);box-shadow:0 0 0 3px var(--brand-glow);border-color:var(--brand)}
 .tick{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line-2);flex:none;display:grid;
   place-items:center;color:transparent;transition:all .14s}
