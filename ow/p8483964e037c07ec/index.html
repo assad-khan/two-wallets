@@ -18,7 +18,7 @@
 :root{
   --bg:#f3efe9; --panel:#fffefb; --panel-2:#f7f3ed; --panel-3:#efe9e0;
   --line:#e3dcd0; --line-2:#d2c9ba;
-  --ink:#231f1a; --ink-2:#5f564c; --ink-3:#8d8378;
+  --ink:#231f1a; --ink-2:#5f564c; --ink-3:#71685f;
   --brand:#2f7a68; --brand-2:#246153; --brand-soft:#e0efe9; --brand-glow:rgba(47,122,104,.13);
   --good:#2f7a68; --warn:#a9762f; --bad:#a44b40;
   --s1:#15917a; --s2:#d2622f; --s3:#4b5fd0; --s4:#d79a1a; --s5:#b5478f; --s6:#5c9e2d;
@@ -33,7 +33,7 @@
 :root[data-theme="midnight"]{
   --bg:#0d1117; --panel:#161c26; --panel-2:#1c232f; --panel-3:#242c3a;
   --line:#262e3c; --line-2:#36404f;
-  --ink:#edf1f7; --ink-2:#9aa5b8; --ink-3:#6b7586;
+  --ink:#edf1f7; --ink-2:#9aa5b8; --ink-3:#8a93a2;
   --brand:#5fc5ac; --brand-2:#7ad4bd; --brand-soft:#15302a; --brand-glow:rgba(95,197,172,.16);
   --good:#5fc5ac; --warn:#d4a257; --bad:#e08b80;
   --s1:#21937b; --s2:#d9703c; --s3:#6b7cd8; --s4:#b08a26; --s5:#c45f9f; --s6:#68a440;
@@ -229,6 +229,11 @@ table.dtable td.n{text-align:right;font-family:var(--nums);font-weight:650}
   .panel > .ph .seg button{flex:1}
   .panel > .pf > div[style*="grid"]{grid-template-columns:1fr!important}
 }
+/* Keyboard users must be able to see where they are. */
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:var(--r-sm)}
+.nav button:focus-visible,.side .navitem:focus-visible{outline-offset:-2px}
+.field input:focus-visible,.quick input:focus-visible{outline:none}
+
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
 /* ============================================================
